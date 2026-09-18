@@ -1,0 +1,5 @@
+.DS_Store
+tool-hub/node_modules/
+tool-hub/dist/
+tool-hub/server/data/*.sqlite
+tool-hub/server/data/*.sqlite-*
