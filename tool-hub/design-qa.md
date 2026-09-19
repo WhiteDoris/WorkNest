@@ -1,4 +1,4 @@
-# Tool Hub Design QA
+# WorkNest Design QA
 
 - Source visual truth: `/Users/baiyang121/.codex/generated_images/01a0a99d-55ae-75b3-bee7-7f3ac521ce06/exec-6c85ecb4-b391-4d9e-b0b1-ff1518b3c752.png`
 - Implementation: `http://localhost:4173/` in Codex In-app Browser
@@ -10,7 +10,7 @@
 
 ## Comparison
 
-Full-view comparison covered the icon rail, Tool Hub wordmark, search/header region, category chips, pinned shelf, and three-column tool grid. Focused comparison covered the navigation rail, pinned card row, card metadata and action buttons. No mobile comparison was needed for this desktop-first target.
+Full-view comparison covered the icon rail, WorkNest wordmark, search/header region, category chips, pinned shelf, and three-column tool grid. Focused comparison covered the navigation rail, pinned card row, card metadata and action buttons. No mobile comparison was needed for this desktop-first target.
 
 ## Findings
 
@@ -20,7 +20,7 @@ Full-view comparison covered the icon rail, Tool Hub wordmark, search/header reg
 
 ## Comparison history
 
-1. Initial implementation used a conventional light card grid. It was refined with the selected visual's Tool Hub wordmark, light Bento-style pinned cards, colored featured surfaces, icon-only navigation rail, hover tooltips, and stronger header hierarchy.
+1. Initial implementation used a conventional light card grid. It was refined with the selected visual's WorkNest wordmark, light Bento-style pinned cards, colored featured surfaces, icon-only navigation rail, hover tooltips, and stronger header hierarchy.
 2. Final capture was rechecked at 1440 x 1024 after the refinement. The default state was visible without clipping or overlap, and the remaining differences were classified as P3 polish.
 
 ## Primary interactions tested

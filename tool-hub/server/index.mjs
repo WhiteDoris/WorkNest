@@ -108,7 +108,7 @@ seed();
 const seedDocuments = db.transaction(() => {
   if (db.prepare("SELECT COUNT(*) AS count FROM documents").get().count > 0) return;
   const documents = [
-    ["doc-product", "Tool Hub 产品说明", "https://docs.example.com/tool-hub", "工具库的产品目标、信息架构和后续规划", "cat-3", ["产品", "规划"], 1],
+    ["doc-product", "WorkNest 产品说明", "https://docs.example.com/worknest", "工具库的产品目标、信息架构和后续规划", "cat-3", ["产品", "规划"], 1],
     ["doc-frontend", "前端开发规范", "https://developer.mozilla.org/zh-CN/", "常用 Web API、组件实现和工程规范参考", "cat-1", ["规范", "Web"], 0],
     ["doc-design", "设计系统参考", "https://www.figma.com/community", "收集界面灵感、组件和交互设计参考", "cat-2", ["UI", "灵感"], 0],
     ["doc-meeting", "项目会议纪要", "https://docs.example.com/meeting-notes", "记录项目讨论、决策和待办事项", "cat-3", ["会议"], 0],
@@ -258,4 +258,4 @@ app.post("/api/import", (request, response) => {
 });
 
 const port = Number(process.env.PORT || 3001);
-app.listen(port, "127.0.0.1", () => console.log(`Tool Hub API listening on http://127.0.0.1:${port}`));
+app.listen(port, "127.0.0.1", () => console.log(`WorkNest API listening on http://127.0.0.1:${port}`));
