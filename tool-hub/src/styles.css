@@ -124,9 +124,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .entry-badge, .category-badge, .tag-badge { display: inline-flex; align-items: center; max-width: 92px; height: 23px; padding: 0 8px; border-radius: 7px; overflow: hidden; font-size: 11px; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
 .entry-badge.http { color: #4d61d5; background: #eeefff; }
 .entry-badge.path { color: var(--mint-ink); background: var(--mint); }
+.local-badge { display: inline-flex; align-items: center; height: 23px; padding: 0 8px; border-radius: 7px; color: #b27612; background: #fff3d8; font-size: 11px; line-height: 1; white-space: nowrap; }
 .category-badge, .tag-badge { color: #727b9d; background: #f3f4f9; }
 .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: auto; padding-top: 11px; }
+.address-stack { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 4px; }
 .address-preview { overflow: hidden; color: #9aa0b8; font-size: 10px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.local-address-preview { overflow: hidden; color: #b58b4c; font-size: 10px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .open-button { height: 33px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; padding: 0 12px; border: 0; border-radius: 9px; color: var(--violet-strong); background: #f0edff; font-size: 12px; font-weight: 700; }
 .open-button:hover { color: #fff; background: var(--violet); }
 
@@ -193,12 +196,21 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .form-grid input, .form-grid select, .form-grid textarea { width: 100%; border: 1px solid #e0e1ef; border-radius: 9px; outline: 0; padding: 10px 11px; color: var(--ink); background: #fcfcff; font-size: 13px; resize: vertical; }
 .form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus { border-color: #aa9bff; box-shadow: 0 0 0 3px #eeeaff; }
 .field-hint { color: #a0a5bd; font-size: 10px; font-weight: 400; }
+.icon-picker { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; padding: 10px; border: 1px solid #e0e1ef; border-radius: 10px; background: #fcfcff; }
+.icon-option { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; border: 1px solid transparent; border-radius: 9px; color: #697292; background: transparent; font-size: 10px; font-weight: 500; }
+.icon-option:hover { color: var(--violet-strong); background: var(--violet-pale); }
+.icon-option.selected { border-color: #c6bbff; color: var(--violet-strong); background: #f0edff; box-shadow: 0 4px 10px rgba(103, 65, 244, 0.09); font-weight: 700; }
+.icon-option-preview { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; }
 .form-options { display: flex; gap: 22px; margin-top: 18px; }
 .check-row { display: inline-flex; align-items: center; gap: 8px; color: #5b6487; font-size: 12px; }
 .check-row input { accent-color: var(--violet); }
 .modal-footer { display: flex; justify-content: flex-end; gap: 9px; margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--line); }
 .secondary-button { height: 38px; padding: 0 15px; border: 1px solid var(--line-strong); border-radius: 9px; color: #626b8d; background: #fff; font-size: 13px; font-weight: 600; }
 .secondary-button:hover { border-color: #b8aeff; color: var(--violet-strong); }
+.category-modal { width: min(420px, 100%); }
+.category-name-field { display: flex; flex-direction: column; gap: 7px; color: #5a6386; font-size: 12px; font-weight: 600; }
+.category-name-field input { width: 100%; border: 1px solid #e0e1ef; border-radius: 9px; outline: 0; padding: 10px 11px; color: var(--ink); background: #fcfcff; font-size: 13px; }
+.category-name-field input:focus { border-color: #aa9bff; box-shadow: 0 0 0 3px #eeeaff; }
 
 @media (max-width: 1150px) {
   .brand-lockup { width: 150px; }
@@ -237,4 +249,5 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .documents-section.list-view .document-card-footer { display: flex; justify-content: space-between; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid label.wide { grid-column: auto; }
+  .icon-picker { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

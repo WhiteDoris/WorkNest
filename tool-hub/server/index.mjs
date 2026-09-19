@@ -105,6 +105,30 @@ const seed = db.transaction(() => {
 });
 seed();
 
+const defaultToolUrls = {
+  chrome: "https://www.google.com/chrome/",
+  vscode: "https://code.visualstudio.com/",
+  postman: "https://www.postman.com/",
+  docker: "https://www.docker.com/products/docker-desktop/",
+  wechat: "https://weixin.qq.com/",
+  typora: "https://typora.io/",
+  obsidian: "https://obsidian.md/",
+};
+const ensureHttpToolAddresses = db.transaction(() => {
+  const findTool = db.prepare("SELECT id, local_path AS localPath FROM tools WHERE id = ? AND entry_type = 'path'");
+  const hasPrimaryEndpoint = db.prepare("SELECT id FROM endpoints WHERE tool_id = ? AND is_primary = 1 LIMIT 1");
+  const updateTool = db.prepare("UPDATE tools SET entry_type = 'http', updated_at = ? WHERE id = ?");
+  const insertEndpoint = db.prepare("INSERT INTO endpoints (id, tool_id, label, url, is_primary, sort_order) VALUES (?, ?, ?, ?, 1, 0)");
+  Object.entries(defaultToolUrls).forEach(([toolId, url]) => {
+    const tool = findTool.get(toolId);
+    if (!tool?.localPath || hasPrimaryEndpoint.get(toolId)) return;
+    const timestamp = now();
+    updateTool.run(timestamp, toolId);
+    insertEndpoint.run(`${toolId}-primary`, toolId, "主入口", url);
+  });
+});
+ensureHttpToolAddresses();
+
 const seedDocuments = db.transaction(() => {
   if (db.prepare("SELECT COUNT(*) AS count FROM documents").get().count > 0) return;
   const documents = [
@@ -159,7 +183,7 @@ function validatePayload(payload, existing = {}) {
   if (!name) throw new Error("工具名称不能为空");
   if (!["http", "path"].includes(entryType)) throw new Error("工具类型无效");
   const primaryUrl = entryType === "http" ? normalizeUrl(payload.primaryUrl ?? existing.primaryUrl) : "";
-  const localPath = entryType === "path" ? String(payload.localPath ?? existing.localPath ?? "").trim() : "";
+  const localPath = String(payload.localPath ?? existing.localPath ?? "").trim();
   if (entryType === "http" && !primaryUrl) throw new Error("HTTP 地址不能为空");
   if (entryType === "path" && !localPath) throw new Error("本地路径不能为空");
   const backupUrls = (payload.backupUrls || []).map(normalizeUrl).filter(Boolean);
