@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">WorkNest</title>
+  <desc id="desc">A rounded purple square with a white W-shaped nest mark</desc>
+  <defs>
+    <linearGradient id="nest-gradient" x1="14" y1="10" x2="114" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C5CFF" />
+      <stop offset="1" stop-color="#4B2BD7" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="32" fill="url(#nest-gradient)" />
+  <path d="M28 42l10 39 14-28 12 28 14-28 10 39" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" />
+  <path d="M27 94c18 13 56 13 74 0" fill="none" stroke="#BDF5DE" stroke-linecap="round" stroke-width="7" />
+  <circle cx="27" cy="94" r="4" fill="#FFD46A" />
+  <circle cx="101" cy="94" r="4" fill="#FFD46A" />
+</svg>

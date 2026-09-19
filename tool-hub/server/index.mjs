@@ -85,7 +85,7 @@ try {
 const now = () => new Date().toISOString();
 const makeId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const parseTags = (value) => Array.isArray(value) ? value : JSON.parse(value || "[]");
-const serializeTags = (value) => JSON.stringify(Array.isArray(value) ? value : String(value || "").split(",").map((tag) => tag.trim()).filter(Boolean));
+const serializeTags = (value) => JSON.stringify(Array.isArray(value) ? value : String(value || "").split(/[,，、]/).map((tag) => tag.trim()).filter(Boolean));
 const normalizeUrl = (value) => {
   const raw = String(value || "").trim();
   if (!raw) return "";
