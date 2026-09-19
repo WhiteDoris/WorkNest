@@ -109,14 +109,10 @@ const seed = db.transaction(() => {
     ["github", "GitHub", "面向开发者的代码托管平台", "github", "http", "https://github.com", "cat-1", ["代码"], 0],
     ["figma", "Figma", "在线协作的界面设计工作台", "figma", "http", "https://www.figma.com", "cat-2", ["UI"], 0],
     ["youtube", "YouTube", "发现和观看精彩视频", "youtube", "http", "https://youtube.com", "cat-5", ["视频"], 0],
-    ["wechat", "微信", "高效的沟通与协作入口", "wechat", "path", "/Applications/WeChat.app", "cat-0", ["沟通"], 0],
-    ["feishu", "飞书", "先进的企业协作与办公平台", "feishu", "http", "https://www.feishu.cn", "cat-3", ["协作"], 0],
-    ["baidu", "百度网盘", "安全高效的云存储服务", "baidu", "http", "https://pan.baidu.com", "cat-5", ["云存储"], 0],
     ["downloads", "本地下载目录", "常用文件下载位置", "folder", "path", "/Users/you/Downloads", "cat-4", ["文件"], 0],
     ["typora", "Typora", "优雅的 Markdown 编辑器", "document", "path", "/Applications/Typora.app", "cat-4", ["Markdown"], 0],
     ["obsidian", "Obsidian", "构建你的知识库", "obsidian", "path", "/Applications/Obsidian.app", "cat-3", ["笔记"], 0],
     ["paint", "画图", "简单实用的图像编辑工作台", "image", "path", "/Applications/Preview.app", "cat-2", ["图片"], 0],
-    ["resume", "简历模板", "本地简历模板文件夹", "document", "path", "/Users/you/Documents/Resume", "cat-4", ["模板"], 0],
     ["chatgpt", "ChatGPT", "强大的 AI 助手", "openai", "http", "https://chatgpt.com", "cat-0", ["AI"], 0],
     ["juejin", "掘金", "高质量的技术内容社区", "juejin", "http", "https://juejin.cn", "cat-5", ["社区"], 0],
   ];
@@ -197,6 +193,9 @@ const seedSkills = db.transaction(() => {
   skills.forEach(([id, name, description, icon, entryType, primaryUrl, localPath, categoryId, tags, isPinned], index) => insert.run(id, name, description, icon, entryType, primaryUrl, localPath, categoryId, JSON.stringify(tags), isPinned, index, now(), now()));
 });
 seedSkills();
+
+// Remove the sample entries that are not part of the focused WorkNest starter set.
+db.prepare("DELETE FROM tools WHERE id IN ('wechat', 'feishu', 'baidu', 'resume') OR name IN ('微信', '飞书', '百度网盘', '简历模板', '1111', '11111')").run();
 
 function getCategories() {
   return db.prepare("SELECT id, name, icon, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM categories ORDER BY sort_order, name").all();

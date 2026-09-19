@@ -138,14 +138,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .open-button:hover { color: #fff; background: var(--violet); }
 
 .list-view .tool-grid, .list-view .pinned-grid { display: flex; flex-direction: column; gap: 8px; }
-.list-view .tool-card { min-height: 78px; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, 0.8fr); align-items: center; gap: 16px; padding: 11px 16px; }
+.list-view .tool-card { min-height: 78px; display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(220px, 0.8fr); grid-template-areas: "icon content bottom"; align-items: center; gap: 16px; padding: 11px 16px; }
 .list-view .card-topline, .list-view .card-content, .list-view .card-bottom { margin: 0; padding: 0; }
 .list-view .card-topline { display: contents; }
-.list-view .card-actions { position: absolute; top: 10px; right: 10px; }
-.list-view .card-content { min-width: 0; }
+.list-view .tool-icon { grid-area: icon; }
+.list-view .card-actions { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); }
+.list-view .card-content { grid-area: content; min-width: 0; }
 .list-view .card-content p { margin-top: 2px; }
 .list-view .card-meta { margin-top: 0; }
-.list-view .card-bottom { display: flex; min-width: 0; justify-content: flex-end; }
+.list-view .card-bottom { grid-area: bottom; display: flex; min-width: 0; justify-content: flex-end; padding-right: 78px; }
 .list-view .address-preview { max-width: none; }
 
 .document-filter-bar { display: flex; align-items: center; gap: 16px; min-height: 52px; margin: 4px 0 18px; padding: 8px 12px; border: 1px solid #e7e5f4; border-radius: 13px; background: rgba(255, 255, 255, 0.72); }
@@ -172,13 +173,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .document-card-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; min-width: 0; margin-top: auto; padding-top: 13px; }
 .document-badges { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .documents-section.list-view .document-grid { display: flex; flex-direction: column; gap: 8px; }
-.documents-section.list-view .document-card { min-height: 92px; display: grid; grid-template-columns: auto minmax(170px, 0.75fr) minmax(190px, 1fr) auto; align-items: center; gap: 16px; padding: 11px 16px; }
+.documents-section.list-view .document-card { min-height: 92px; display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; grid-template-areas: "icon content footer"; align-items: center; gap: 16px; padding: 11px 16px; }
 .documents-section.list-view .document-card-header, .documents-section.list-view .document-card-content, .documents-section.list-view .document-card-footer { margin: 0; padding: 0; }
 .documents-section.list-view .document-card-header { display: contents; }
-.documents-section.list-view .document-card-header .card-actions { position: absolute; top: 10px; right: 10px; }
-.documents-section.list-view .document-card-content { min-width: 0; }
+.documents-section.list-view .document-icon { grid-area: icon; }
+.documents-section.list-view .document-card-header .card-actions { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); }
+.documents-section.list-view .document-card-content { grid-area: content; min-width: 0; }
 .documents-section.list-view .document-card-content p { white-space: nowrap; text-overflow: ellipsis; }
-.documents-section.list-view .document-card-footer { display: flex; justify-content: flex-end; }
+.documents-section.list-view .document-card-footer { grid-area: footer; display: flex; justify-content: flex-end; padding-right: 78px; }
 
 .loading-state, .empty-state { min-height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); }
 .loading-state { flex-direction: row; }
@@ -264,7 +266,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .pinned-grid, .tool-grid, .document-grid { grid-template-columns: 1fr; }
   .document-filter-bar { align-items: flex-start; flex-direction: column; gap: 9px; }
   .section-note { display: none; }
-  .list-view .tool-card { grid-template-columns: auto 1fr auto; }
+  .list-view .tool-card { grid-template-columns: 56px minmax(0, 1fr); grid-template-areas: "icon content"; }
   .list-view .card-meta { display: none; }
   .list-view .card-bottom { display: none; }
   .documents-section.list-view .document-card { display: flex; min-height: 190px; }
