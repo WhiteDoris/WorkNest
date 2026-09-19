@@ -9,6 +9,7 @@ import {
   SiApifox, SiBaidu, SiDocker, SiFigma, SiGithub, SiGooglechrome, SiJuejin,
   SiNotion, SiObsidian, SiPostman, SiWechat, SiYoutube,
 } from "react-icons/si";
+import { getFaviconUrls } from "./lib/favicon.js";
 
 const FALLBACK = {
   categories: [
@@ -82,17 +83,6 @@ function makeDocumentDraft(categories) {
 
 function makeSkillDraft(categories) {
   return { id: null, name: "", description: "", icon: "spark", entryType: "http", primaryUrl: "", localPath: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
-}
-
-function getFaviconUrls(entryType, primaryUrl) {
-  if (entryType !== "http" || !primaryUrl) return [];
-  try {
-    const url = new URL(primaryUrl);
-    const origin = url.origin;
-    return [`${origin}/favicon.ico`, `${origin}/favicon.svg`, `${origin}/favicon.png`, `/api/favicon?url=${encodeURIComponent(primaryUrl)}`];
-  } catch {
-    return [];
-  }
 }
 
 function AutoFavicon({ urls, fallback }) {

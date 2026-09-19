@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { findIconHref as parseIconHref } from "./favicon.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(__dirname, "data");
@@ -98,11 +99,11 @@ const normalizeUrl = (value) => {
 const remoteRequest = (url) => fetch(url, {
   headers: { accept: "text/html, image/avif, image/webp, image/apng, image/svg+xml, image/*", "user-agent": "WorkNest favicon loader" },
   redirect: "follow",
-  signal: AbortSignal.timeout(5000),
+  signal: AbortSignal.timeout(7000),
 });
 const getHtmlAttribute = (tag, attribute) => tag.match(new RegExp(`${attribute}\\s*=\\s*["']([^"']+)["']`, "i"))?.[1] || "";
 const findIconHref = (html, pageUrl) => {
-  const links = html.match(/<link\\b[^>]*>/gi) || [];
+  const links = html.match(/<link\b[^>]*>/gi) || [];
   const iconLink = links.find((tag) => /(?:^|\\s)(?:icon|shortcut|apple-touch-icon)(?:\\s|$)/i.test(getHtmlAttribute(tag, "rel")));
   const href = iconLink && getHtmlAttribute(iconLink, "href");
   if (!href) return "";
@@ -125,7 +126,7 @@ const findRemoteIcon = async (pageUrl) => {
   const candidates = [];
   if (contentType.startsWith("text/html")) {
     const html = await pageResponse.text();
-    const declaredIcon = findIconHref(html, finalUrl);
+    const declaredIcon = parseIconHref(html, finalUrl);
     if (declaredIcon) candidates.push(declaredIcon);
   }
   const origin = new URL(finalUrl).origin;
@@ -312,10 +313,7 @@ app.get("/api/favicon", async (request, response) => {
   try {
     const pageUrl = normalizeUrl(request.query.url);
     if (!pageUrl) return response.status(400).end();
-    const icon = await Promise.race([
-      findRemoteIcon(pageUrl),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("favicon lookup timeout")), 3500)),
-    ]);
+    const icon = await findRemoteIcon(pageUrl);
     if (!icon) return response.status(404).end();
     response.set("Content-Type", icon.contentType);
     response.set("Cache-Control", "public, max-age=3600");
