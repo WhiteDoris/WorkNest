@@ -84,32 +84,40 @@ function makeSkillDraft(categories) {
   return { id: null, name: "", description: "", icon: "spark", entryType: "http", primaryUrl: "", localPath: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
 }
 
-function getFaviconUrl(entryType, primaryUrl) {
-  if (entryType !== "http" || !primaryUrl) return "";
+function getFaviconUrls(entryType, primaryUrl) {
+  if (entryType !== "http" || !primaryUrl) return [];
   try {
     const url = new URL(primaryUrl);
-    return `${url.origin}/favicon.ico`;
+    const origin = url.origin;
+    return [`${origin}/favicon.ico`, `${origin}/favicon.svg`, `${origin}/favicon.png`, `/api/favicon?url=${encodeURIComponent(primaryUrl)}`];
   } catch {
-    return "";
+    return [];
   }
 }
 
-function AutoFavicon({ url, fallback }) {
-  const [status, setStatus] = useState(url ? "loading" : "failed");
-  useEffect(() => setStatus(url ? "loading" : "failed"), [url]);
+function AutoFavicon({ urls, fallback }) {
+  const urlsKey = urls.join("|");
+  const [urlIndex, setUrlIndex] = useState(0);
+  const [status, setStatus] = useState(urls.length ? "loading" : "failed");
+  useEffect(() => { setUrlIndex(0); setStatus(urls.length ? "loading" : "failed"); }, [urlsKey]);
+  const url = urls[urlIndex];
   if (!url || status === "failed") return fallback;
-  return <><span className={`remote-icon-fallback ${status === "loaded" ? "is-hidden" : ""}`}>{fallback}</span><img className={`remote-tool-icon ${status === "loaded" ? "is-loaded" : ""}`} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={() => setStatus("loaded")} onError={() => setStatus("failed")} /></>;
+  const handleError = () => {
+    if (urlIndex < urls.length - 1) setUrlIndex((current) => current + 1);
+    else setStatus("failed");
+  };
+  return <><span className={`remote-icon-fallback ${status === "loaded" ? "is-hidden" : ""}`}>{fallback}</span><img className={`remote-tool-icon ${status === "loaded" ? "is-loaded" : ""}`} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={() => setStatus("loaded")} onError={handleError} /></>;
 }
 
 function ToolIcon({ tool, size = 48 }) {
-  const faviconUrl = getFaviconUrl(tool.entryType, tool.primaryUrl);
-  return <div className="tool-icon" style={{ background: `${iconColors[tool.icon] || "#6d5dfc"}12` }}><AutoFavicon url={faviconUrl} fallback={<Icon name={tool.icon} size={size} />} /></div>;
+  const faviconUrls = getFaviconUrls(tool.entryType, tool.primaryUrl);
+  return <div className="tool-icon" style={{ background: `${iconColors[tool.icon] || "#6d5dfc"}12` }}><AutoFavicon urls={faviconUrls} fallback={<Icon name={tool.icon} size={size} />} /></div>;
 }
 
 function SkillIcon({ skill, size = 46 }) {
   const Component = skillIcons[skill.icon] || FiZap;
-  const faviconUrl = getFaviconUrl(skill.entryType, skill.primaryUrl);
-  return <div className="tool-icon skill-icon" style={{ background: `${skillIconColors[skill.icon] || "#6d5dfc"}16` }}><AutoFavicon url={faviconUrl} fallback={<Component size={size} aria-hidden="true" style={{ color: skillIconColors[skill.icon] || "#6d5dfc" }} />} /></div>;
+  const faviconUrls = getFaviconUrls(skill.entryType, skill.primaryUrl);
+  return <div className="tool-icon skill-icon" style={{ background: `${skillIconColors[skill.icon] || "#6d5dfc"}16` }}><AutoFavicon urls={faviconUrls} fallback={<Component size={size} aria-hidden="true" style={{ color: skillIconColors[skill.icon] || "#6d5dfc" }} />} /></div>;
 }
 
 function App() {
@@ -345,7 +353,7 @@ function RailButton({ label, icon: Component, active, onClick }) { return <butto
 
 function ToolCard({ tool, featured = false, onOpen, onEdit, onDelete, onTogglePinned, menuId, setMenuId, categoryMap }) {
   const category = categoryMap[tool.categoryId]?.name; const hasHttp = Boolean(tool.primaryUrl); const address = tool.primaryUrl || tool.localPath; const hasLocalPath = Boolean(tool.localPath);
-  return <article className={`tool-card ${featured ? "featured" : ""} ${tool.status !== "active" ? "disabled" : ""}`}><div className="card-topline"><ToolIcon tool={tool} size={featured ? 54 : 46} /><div className="card-actions"><button type="button" className={`star-button ${tool.isPinned ? "selected" : ""}`} aria-label={tool.isPinned ? "取消收藏" : "加入常用页面"} onClick={() => onTogglePinned(tool)}><FiStar size={18} /></button><div className="menu-wrap"><button type="button" className="more-button" aria-label="更多操作" onClick={() => setMenuId(menuId === tool.id ? null : tool.id)}><FiMoreVertical size={18} /></button>{menuId === tool.id && <div className="card-menu"><button type="button" onClick={() => onOpen(tool)}>{hasHttp ? <FiArrowUpRight /> : <FiCopy />} {hasHttp ? "打开" : "复制路径"}</button><button type="button" onClick={() => onEdit(tool)}><FiEdit3 /> 编辑信息</button><button type="button" onClick={() => onDelete(tool)} className="danger"><FiTrash2 /> 删除</button></div>}</div></div></div><div className="card-content"><h3>{tool.name}</h3><p>{tool.description}</p><div className="card-meta"><span className={`entry-badge ${hasHttp ? "http" : "path"}`}>{hasHttp ? "HTTP" : "本地路径"}</span>{hasHttp && hasLocalPath && <span className="local-badge">有本地路径</span>}{category && <span className="category-badge">{category}</span>}{(tool.tags || []).slice(0, 1).map((tag) => <span className="tag-badge" key={tag}>{tag}</span>)}</div></div><div className="card-bottom"><div className="address-stack"><span className="address-preview" title={hasLocalPath && hasHttp ? `${tool.primaryUrl}\n本地路径：${tool.localPath}` : address}>{address}</span>{hasHttp && hasLocalPath && <span className="local-address-preview" title={tool.localPath}>本地：{tool.localPath}</span>}</div><button className="open-button" type="button" onClick={() => onOpen(tool)}>{hasHttp ? "打开" : "复制路径"}{hasHttp ? <FiArrowUpRight size={15} /> : <FiCopy size={15} />}</button></div></article>;
+  return <article className={`tool-card ${featured ? "featured" : ""} ${tool.status !== "active" ? "disabled" : ""}`}><div className="card-topline"><ToolIcon tool={tool} size={featured ? 54 : 46} /><div className="card-actions"><button type="button" className={`star-button ${tool.isPinned ? "selected" : ""}`} aria-label={tool.isPinned ? "取消收藏" : "加入常用页面"} onClick={() => onTogglePinned(tool)}><FiStar size={18} /></button><div className="menu-wrap"><button type="button" className="more-button" aria-label="更多操作" onClick={() => setMenuId(menuId === tool.id ? null : tool.id)}><FiMoreVertical size={18} /></button>{menuId === tool.id && <div className="card-menu"><button type="button" onClick={() => onOpen(tool)}>{hasHttp ? <FiArrowUpRight /> : <FiCopy />} {hasHttp ? "打开" : "复制路径"}</button><button type="button" onClick={() => onEdit(tool)}><FiEdit3 /> 编辑信息</button><button type="button" onClick={() => onDelete(tool)} className="danger"><FiTrash2 /> 删除</button></div>}</div></div></div><div className="card-content"><h3>{tool.name}</h3><p>{tool.description}</p><div className="card-meta"><span className={`entry-badge ${hasHttp ? "http" : "path"}`}>{hasHttp ? "HTTP" : "本地路径"}</span>{hasHttp && hasLocalPath && <span className="local-badge">有本地路径</span>}{category && <span className="category-badge">{category}</span>}{(tool.tags || []).slice(0, 3).map((tag) => <span className="tag-badge" key={tag}>{tag}</span>)}</div></div><div className="card-bottom"><div className="address-stack"><span className="address-preview" title={hasLocalPath && hasHttp ? `${tool.primaryUrl}\n本地路径：${tool.localPath}` : address}>{address}</span>{hasHttp && hasLocalPath && <span className="local-address-preview" title={tool.localPath}>本地：{tool.localPath}</span>}</div><button className="open-button" type="button" onClick={() => onOpen(tool)}>{hasHttp ? "打开" : "复制路径"}{hasHttp ? <FiArrowUpRight size={15} /> : <FiCopy size={15} />}</button></div></article>;
 }
 
 function ToolEditor({ editor, categories, onChange, onClose, onSubmit }) {

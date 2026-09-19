@@ -95,6 +95,50 @@ const normalizeUrl = (value) => {
   return parsed.toString().replace(/\/$/, "") || candidate;
 };
 
+const remoteRequest = (url) => fetch(url, {
+  headers: { accept: "text/html, image/avif, image/webp, image/apng, image/svg+xml, image/*", "user-agent": "WorkNest favicon loader" },
+  redirect: "follow",
+  signal: AbortSignal.timeout(5000),
+});
+const getHtmlAttribute = (tag, attribute) => tag.match(new RegExp(`${attribute}\\s*=\\s*["']([^"']+)["']`, "i"))?.[1] || "";
+const findIconHref = (html, pageUrl) => {
+  const links = html.match(/<link\\b[^>]*>/gi) || [];
+  const iconLink = links.find((tag) => /(?:^|\\s)(?:icon|shortcut|apple-touch-icon)(?:\\s|$)/i.test(getHtmlAttribute(tag, "rel")));
+  const href = iconLink && getHtmlAttribute(iconLink, "href");
+  if (!href) return "";
+  try { return new URL(href, pageUrl).toString(); } catch { return ""; }
+};
+const readRemoteIcon = async (url) => {
+  const response = await remoteRequest(url);
+  if (!response.ok) return null;
+  const contentType = (response.headers.get("content-type") || "").split(";", 1)[0];
+  if (!contentType.startsWith("image/")) return null;
+  const body = Buffer.from(await response.arrayBuffer());
+  if (!body.length || body.length > 1024 * 1024) return null;
+  return { body, contentType };
+};
+const findRemoteIcon = async (pageUrl) => {
+  const pageResponse = await remoteRequest(pageUrl);
+  if (!pageResponse.ok) return null;
+  const finalUrl = pageResponse.url || pageUrl;
+  const contentType = (pageResponse.headers.get("content-type") || "").split(";", 1)[0];
+  const candidates = [];
+  if (contentType.startsWith("text/html")) {
+    const html = await pageResponse.text();
+    const declaredIcon = findIconHref(html, finalUrl);
+    if (declaredIcon) candidates.push(declaredIcon);
+  }
+  const origin = new URL(finalUrl).origin;
+  candidates.push(`${origin}/favicon.ico`, `${origin}/favicon.svg`, `${origin}/favicon.png`);
+  for (const candidate of [...new Set(candidates)]) {
+    try {
+      const icon = await readRemoteIcon(candidate);
+      if (icon) return icon;
+    } catch { /* Try the next favicon candidate. */ }
+  }
+  return null;
+};
+
 const seed = db.transaction(() => {
   if (db.prepare("SELECT COUNT(*) AS count FROM categories").get().count > 0) return;
   const categories = [["常用", "star"], ["开发", "code"], ["设计", "design"], ["办公", "document"], ["本地", "folder"], ["网络", "globe"], ["其他", "more"]];
@@ -264,6 +308,22 @@ function validateSkillPayload(payload, existing = {}) {
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
+app.get("/api/favicon", async (request, response) => {
+  try {
+    const pageUrl = normalizeUrl(request.query.url);
+    if (!pageUrl) return response.status(400).end();
+    const icon = await Promise.race([
+      findRemoteIcon(pageUrl),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("favicon lookup timeout")), 3500)),
+    ]);
+    if (!icon) return response.status(404).end();
+    response.set("Content-Type", icon.contentType);
+    response.set("Cache-Control", "public, max-age=3600");
+    response.send(icon.body);
+  } catch {
+    response.status(404).end();
+  }
+});
 app.get("/api/bootstrap", (_request, response) => response.json({ categories: getCategories(), tools: getTools(), documents: getDocuments(), skills: getSkills() }));
 app.get("/api/categories", (_request, response) => response.json(getCategories()));
 app.post("/api/categories", (request, response) => {
