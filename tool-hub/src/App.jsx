@@ -84,13 +84,32 @@ function makeSkillDraft(categories) {
   return { id: null, name: "", description: "", icon: "spark", entryType: "http", primaryUrl: "", localPath: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
 }
 
+function getFaviconUrl(entryType, primaryUrl) {
+  if (entryType !== "http" || !primaryUrl) return "";
+  try {
+    const url = new URL(primaryUrl);
+    return `${url.origin}/favicon.ico`;
+  } catch {
+    return "";
+  }
+}
+
+function AutoFavicon({ url, fallback }) {
+  const [status, setStatus] = useState(url ? "loading" : "failed");
+  useEffect(() => setStatus(url ? "loading" : "failed"), [url]);
+  if (!url || status === "failed") return fallback;
+  return <><span className={`remote-icon-fallback ${status === "loaded" ? "is-hidden" : ""}`}>{fallback}</span><img className={`remote-tool-icon ${status === "loaded" ? "is-loaded" : ""}`} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={() => setStatus("loaded")} onError={() => setStatus("failed")} /></>;
+}
+
 function ToolIcon({ tool, size = 48 }) {
-  return <div className="tool-icon" style={{ background: `${iconColors[tool.icon] || "#6d5dfc"}12` }}><Icon name={tool.icon} size={size} /></div>;
+  const faviconUrl = getFaviconUrl(tool.entryType, tool.primaryUrl);
+  return <div className="tool-icon" style={{ background: `${iconColors[tool.icon] || "#6d5dfc"}12` }}><AutoFavicon url={faviconUrl} fallback={<Icon name={tool.icon} size={size} />} /></div>;
 }
 
 function SkillIcon({ skill, size = 46 }) {
   const Component = skillIcons[skill.icon] || FiZap;
-  return <div className="tool-icon skill-icon" style={{ background: `${skillIconColors[skill.icon] || "#6d5dfc"}16` }}><Component size={size} aria-hidden="true" style={{ color: skillIconColors[skill.icon] || "#6d5dfc" }} /></div>;
+  const faviconUrl = getFaviconUrl(skill.entryType, skill.primaryUrl);
+  return <div className="tool-icon skill-icon" style={{ background: `${skillIconColors[skill.icon] || "#6d5dfc"}16` }}><AutoFavicon url={faviconUrl} fallback={<Component size={size} aria-hidden="true" style={{ color: skillIconColors[skill.icon] || "#6d5dfc" }} />} /></div>;
 }
 
 function App() {

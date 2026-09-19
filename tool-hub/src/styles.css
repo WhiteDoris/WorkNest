@@ -110,8 +110,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .skill-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(249, 247, 255, 0.94)); }
 .skill-card .skill-icon { border: 1px solid rgba(103, 65, 244, 0.08); }
 .card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.tool-icon { width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 14px; }
+.tool-icon { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 14px; }
 .featured .tool-icon { width: 56px; height: 56px; border-radius: 16px; }
+.remote-icon-fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity 160ms ease; }
+.remote-icon-fallback.is-hidden { opacity: 0; }
+.remote-tool-icon { position: absolute; inset: 17%; display: block; width: 66%; height: 66%; object-fit: contain; border-radius: 9px; opacity: 0; transition: opacity 160ms ease; }
+.remote-tool-icon.is-loaded { opacity: 1; }
 .card-actions { display: flex; align-items: center; gap: 2px; }
 .star-button, .more-button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 8px; color: #7280a4; background: transparent; }
 .star-button:hover, .more-button:hover { color: var(--violet-strong); background: var(--violet-pale); }
