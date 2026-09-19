@@ -13,6 +13,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
+    icon TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
@@ -56,7 +57,30 @@ db.exec(`
     updated_at TEXT NOT NULL,
     FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
   );
+  CREATE TABLE IF NOT EXISTS skills (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    icon TEXT NOT NULL DEFAULT 'skill',
+    entry_type TEXT NOT NULL CHECK(entry_type IN ('http', 'path')),
+    primary_url TEXT NOT NULL DEFAULT '',
+    local_path TEXT NOT NULL DEFAULT '',
+    category_id TEXT,
+    tags TEXT NOT NULL DEFAULT '[]',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'active',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
+  );
 `);
+
+try {
+  db.exec("ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT ''");
+} catch (error) {
+  if (!error.message.includes("duplicate column name")) throw error;
+}
 
 const now = () => new Date().toISOString();
 const makeId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -73,25 +97,25 @@ const normalizeUrl = (value) => {
 
 const seed = db.transaction(() => {
   if (db.prepare("SELECT COUNT(*) AS count FROM categories").get().count > 0) return;
-  const categories = ["常用", "开发", "设计", "办公", "本地", "网络", "其他"];
-  const insertCategory = db.prepare("INSERT INTO categories (id, name, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?)");
-  categories.forEach((name, index) => insertCategory.run(`cat-${index}`, name, index, now(), now()));
+  const categories = [["常用", "star"], ["开发", "code"], ["设计", "design"], ["办公", "document"], ["本地", "folder"], ["网络", "globe"], ["其他", "more"]];
+  const insertCategory = db.prepare("INSERT INTO categories (id, name, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)");
+  categories.forEach(([name, icon], index) => insertCategory.run(`cat-${index}`, name, icon, index, now(), now()));
   const tools = [
     ["chrome", "Chrome", "快速、安全的网页浏览器", "chrome", "path", "/Applications/Google Chrome.app", "cat-0", ["浏览器"], 1],
     ["vscode", "VS Code", "强大的代码编辑器", "vscode", "path", "/Applications/Visual Studio Code.app", "cat-1", ["编辑器"], 1],
-    ["postman", "Postman", "API 开发与测试工具", "postman", "path", "/Applications/Postman.app", "cat-1", ["API"], 1],
+    ["postman", "Postman", "API 开发与测试工作台", "postman", "path", "/Applications/Postman.app", "cat-1", ["API"], 1],
     ["notion", "Notion", "连接你的想法与工作", "notion", "http", "https://www.notion.so", "cat-3", ["知识库"], 0],
     ["docker", "Docker", "构建、运行和管理容器", "docker", "path", "/Applications/Docker.app", "cat-1", ["容器"], 0],
     ["github", "GitHub", "面向开发者的代码托管平台", "github", "http", "https://github.com", "cat-1", ["代码"], 0],
-    ["figma", "Figma", "在线协作的界面设计工具", "figma", "http", "https://www.figma.com", "cat-2", ["UI"], 0],
+    ["figma", "Figma", "在线协作的界面设计工作台", "figma", "http", "https://www.figma.com", "cat-2", ["UI"], 0],
     ["youtube", "YouTube", "发现和观看精彩视频", "youtube", "http", "https://youtube.com", "cat-5", ["视频"], 0],
-    ["wechat", "微信", "高效的沟通与协作工具", "wechat", "path", "/Applications/WeChat.app", "cat-0", ["沟通"], 0],
+    ["wechat", "微信", "高效的沟通与协作入口", "wechat", "path", "/Applications/WeChat.app", "cat-0", ["沟通"], 0],
     ["feishu", "飞书", "先进的企业协作与办公平台", "feishu", "http", "https://www.feishu.cn", "cat-3", ["协作"], 0],
     ["baidu", "百度网盘", "安全高效的云存储服务", "baidu", "http", "https://pan.baidu.com", "cat-5", ["云存储"], 0],
     ["downloads", "本地下载目录", "常用文件下载位置", "folder", "path", "/Users/you/Downloads", "cat-4", ["文件"], 0],
     ["typora", "Typora", "优雅的 Markdown 编辑器", "document", "path", "/Applications/Typora.app", "cat-4", ["Markdown"], 0],
     ["obsidian", "Obsidian", "构建你的知识库", "obsidian", "path", "/Applications/Obsidian.app", "cat-3", ["笔记"], 0],
-    ["paint", "画图", "简单实用的图像编辑工具", "image", "path", "/Applications/Preview.app", "cat-2", ["图片"], 0],
+    ["paint", "画图", "简单实用的图像编辑工作台", "image", "path", "/Applications/Preview.app", "cat-2", ["图片"], 0],
     ["resume", "简历模板", "本地简历模板文件夹", "document", "path", "/Users/you/Documents/Resume", "cat-4", ["模板"], 0],
     ["chatgpt", "ChatGPT", "强大的 AI 助手", "openai", "http", "https://chatgpt.com", "cat-0", ["AI"], 0],
     ["juejin", "掘金", "高质量的技术内容社区", "juejin", "http", "https://juejin.cn", "cat-5", ["社区"], 0],
@@ -104,6 +128,11 @@ const seed = db.transaction(() => {
   });
 });
 seed();
+
+const defaultCategoryIcons = { 常用: "star", 开发: "code", 设计: "design", 办公: "document", 本地: "folder", 网络: "globe", 其他: "more" };
+const updateCategoryIcon = db.prepare("UPDATE categories SET icon = ?, updated_at = ? WHERE name = ? AND (icon = '' OR icon IS NULL)");
+Object.entries(defaultCategoryIcons).forEach(([name, icon]) => updateCategoryIcon.run(icon, now(), name));
+db.prepare("UPDATE categories SET icon = 'folder', updated_at = ? WHERE icon = '' OR icon IS NULL").run(now());
 
 const defaultToolUrls = {
   chrome: "https://www.google.com/chrome/",
@@ -143,8 +172,34 @@ const seedDocuments = db.transaction(() => {
 });
 seedDocuments();
 
+const migratePageCopy = db.transaction(() => {
+  const toolUpdates = [
+    ["postman", "API 开发与测试工具", "API 开发与测试工作台"],
+    ["figma", "在线协作的界面设计工具", "在线协作的界面设计工作台"],
+    ["wechat", "高效的沟通与协作工具", "高效的沟通与协作入口"],
+    ["paint", "简单实用的图像编辑工具", "简单实用的图像编辑工作台"],
+  ];
+  const updateTool = db.prepare("UPDATE tools SET description = ?, updated_at = ? WHERE id = ? AND description = ?");
+  toolUpdates.forEach(([id, oldDescription, nextDescription]) => updateTool.run(nextDescription, now(), id, oldDescription));
+  const updateDocument = db.prepare("UPDATE documents SET description = ?, updated_at = ? WHERE id = ? AND description = ?");
+  updateDocument.run("页面库的产品目标、信息架构和后续规划", now(), "doc-product", "工具库的产品目标、信息架构和后续规划");
+});
+migratePageCopy();
+
+const seedSkills = db.transaction(() => {
+  if (db.prepare("SELECT COUNT(*) AS count FROM skills").get().count > 0) return;
+  const skills = [
+    ["skill-brief", "需求拆解 Skill", "把一句话需求整理成可执行的结构化方案", "spark", "http", "http://localhost:8000/skills/brief-to-ard", "", "cat-3", ["需求", "写作"], 1],
+    ["skill-code-review", "代码审查 Skill", "辅助检查代码质量、风险和可维护性", "code", "path", "", "/Users/you/.codex/skills/code-review", "cat-1", ["开发", "质量"], 0],
+    ["skill-design-review", "设计评审 Skill", "从界面一致性和交互体验角度给出改进建议", "design", "http", "https://example.com/skills/design-review", "", "cat-2", ["UI", "评审"], 0],
+  ];
+  const insert = db.prepare("INSERT INTO skills (id, name, description, icon, entry_type, primary_url, local_path, category_id, tags, is_pinned, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)");
+  skills.forEach(([id, name, description, icon, entryType, primaryUrl, localPath, categoryId, tags, isPinned], index) => insert.run(id, name, description, icon, entryType, primaryUrl, localPath, categoryId, JSON.stringify(tags), isPinned, index, now(), now()));
+});
+seedSkills();
+
 function getCategories() {
-  return db.prepare("SELECT id, name, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM categories ORDER BY sort_order, name").all();
+  return db.prepare("SELECT id, name, icon, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM categories ORDER BY sort_order, name").all();
 }
 function getTool(id) {
   const row = db.prepare("SELECT id, name, description, icon, entry_type AS entryType, local_path AS localPath, category_id AS categoryId, tags, is_pinned AS isPinned, status, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM tools WHERE id = ?").get(id);
@@ -161,6 +216,13 @@ function getDocument(id) {
 }
 function getDocuments() {
   return db.prepare("SELECT id FROM documents ORDER BY sort_order, title").all().map(({ id }) => getDocument(id));
+}
+function getSkill(id) {
+  const row = db.prepare("SELECT id, name, description, icon, entry_type AS entryType, primary_url AS primaryUrl, local_path AS localPath, category_id AS categoryId, tags, is_pinned AS isPinned, status, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM skills WHERE id = ?").get(id);
+  return row ? { ...row, tags: parseTags(row.tags), isPinned: Boolean(row.isPinned) } : null;
+}
+function getSkills() {
+  return db.prepare("SELECT id FROM skills ORDER BY sort_order, name").all().map(({ id }) => getSkill(id));
 }
 function validateDocumentPayload(payload, existing = {}) {
   const title = String(payload.title ?? existing.title ?? "").trim();
@@ -189,24 +251,38 @@ function validatePayload(payload, existing = {}) {
   const backupUrls = (payload.backupUrls || []).map(normalizeUrl).filter(Boolean);
   return { name, description: String(payload.description ?? existing.description ?? "").trim(), icon: String(payload.icon ?? existing.icon ?? "folder"), entryType, primaryUrl, localPath, categoryId: payload.categoryId ?? existing.categoryId ?? null, tags: payload.tags ?? existing.tags ?? [], isPinned: Boolean(payload.isPinned ?? existing.isPinned), status: payload.status === "disabled" ? "disabled" : "active", backupUrls };
 }
+function validateSkillPayload(payload, existing = {}) {
+  const name = String(payload.name ?? existing.name ?? "").trim();
+  const entryType = payload.entryType ?? existing.entryType ?? "http";
+  if (!name) throw new Error("Skill 名称不能为空");
+  if (!["http", "path"].includes(entryType)) throw new Error("Skill 类型无效");
+  const primaryUrl = entryType === "http" ? normalizeUrl(payload.primaryUrl ?? existing.primaryUrl) : "";
+  const localPath = String(payload.localPath ?? existing.localPath ?? "").trim();
+  if (entryType === "http" && !primaryUrl) throw new Error("Skill HTTP 地址不能为空");
+  if (entryType === "path" && !localPath) throw new Error("Skill 本地路径不能为空");
+  return { name, description: String(payload.description ?? existing.description ?? "").trim(), icon: String(payload.icon ?? existing.icon ?? "skill"), entryType, primaryUrl, localPath, categoryId: payload.categoryId ?? existing.categoryId ?? null, tags: payload.tags ?? existing.tags ?? [], isPinned: Boolean(payload.isPinned ?? existing.isPinned), status: payload.status === "disabled" ? "disabled" : "active" };
+}
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
-app.get("/api/bootstrap", (_request, response) => response.json({ categories: getCategories(), tools: getTools(), documents: getDocuments() }));
+app.get("/api/bootstrap", (_request, response) => response.json({ categories: getCategories(), tools: getTools(), documents: getDocuments(), skills: getSkills() }));
 app.get("/api/categories", (_request, response) => response.json(getCategories()));
 app.post("/api/categories", (request, response) => {
   try {
     const name = String(request.body.name || "").trim(); if (!name) throw new Error("分组名称不能为空");
-    const category = { id: makeId("cat"), name, sortOrder: getCategories().length, createdAt: now(), updatedAt: now() };
-    db.prepare("INSERT INTO categories (id, name, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?)").run(category.id, category.name, category.sortOrder, category.createdAt, category.updatedAt);
+    const category = { id: makeId("cat"), name, icon: String(request.body.icon || "briefcase"), sortOrder: getCategories().length, createdAt: now(), updatedAt: now() };
+    db.prepare("INSERT INTO categories (id, name, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)").run(category.id, category.name, category.icon, category.sortOrder, category.createdAt, category.updatedAt);
     response.status(201).json(category);
   } catch (error) { response.status(400).json({ error: error.message }); }
 });
 app.patch("/api/categories/:id", (request, response) => {
-  try { const name = String(request.body.name || "").trim(); if (!name) throw new Error("分组名称不能为空"); db.prepare("UPDATE categories SET name = ?, updated_at = ? WHERE id = ?").run(name, now(), request.params.id); response.json(getCategories().find((category) => category.id === request.params.id)); }
+  try { const current = getCategories().find((category) => category.id === request.params.id); if (!current) return response.status(404).json({ error: "分组不存在" }); const name = String(request.body.name ?? current.name).trim(); if (!name) throw new Error("分组名称不能为空"); const icon = String(request.body.icon ?? current.icon ?? "folder"); db.prepare("UPDATE categories SET name = ?, icon = ?, updated_at = ? WHERE id = ?").run(name, icon, now(), request.params.id); response.json(getCategories().find((category) => category.id === request.params.id)); }
   catch (error) { response.status(400).json({ error: error.message }); }
 });
-app.delete("/api/categories/:id", (request, response) => { db.prepare("DELETE FROM categories WHERE id = ?").run(request.params.id); response.status(204).end(); });
+app.delete("/api/categories/:id", (request, response) => {
+  if (/^cat-\d+$/.test(request.params.id)) return response.status(400).json({ error: "系统分组不可删除" });
+  const result = db.prepare("DELETE FROM categories WHERE id = ?").run(request.params.id); if (!result.changes) return response.status(404).json({ error: "分组不存在" }); response.status(204).end();
+});
 app.get("/api/tools", (_request, response) => response.json(getTools()));
 app.post("/api/tools", (request, response) => {
   try {
@@ -244,16 +320,32 @@ app.patch("/api/documents/:id", (request, response) => {
   } catch (error) { response.status(400).json({ error: error.message }); }
 });
 app.delete("/api/documents/:id", (request, response) => { db.prepare("DELETE FROM documents WHERE id = ?").run(request.params.id); response.status(204).end(); });
-app.get("/api/export", (_request, response) => response.json({ schemaVersion: 1, exportedAt: now(), categories: getCategories(), tools: getTools(), documents: getDocuments() }));
+app.get("/api/skills", (_request, response) => response.json(getSkills()));
+app.post("/api/skills", (request, response) => {
+  try {
+    const payload = validateSkillPayload(request.body); const id = makeId("skill"); const createdAt = now(); const sortOrder = db.prepare("SELECT COALESCE(MAX(sort_order), -1) + 1 AS value FROM skills").get().value;
+    db.prepare("INSERT INTO skills (id, name, description, icon, entry_type, primary_url, local_path, category_id, tags, is_pinned, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(id, payload.name, payload.description, payload.icon, payload.entryType, payload.primaryUrl, payload.localPath, payload.categoryId, serializeTags(payload.tags), Number(payload.isPinned), payload.status, sortOrder, createdAt, createdAt);
+    response.status(201).json(getSkill(id));
+  } catch (error) { response.status(400).json({ error: error.message }); }
+});
+app.patch("/api/skills/:id", (request, response) => {
+  try {
+    const current = getSkill(request.params.id); if (!current) return response.status(404).json({ error: "Skill 不存在" }); const payload = validateSkillPayload({ ...current, ...request.body }, current);
+    db.prepare("UPDATE skills SET name = ?, description = ?, icon = ?, entry_type = ?, primary_url = ?, local_path = ?, category_id = ?, tags = ?, is_pinned = ?, status = ?, updated_at = ? WHERE id = ?").run(payload.name, payload.description, payload.icon, payload.entryType, payload.primaryUrl, payload.localPath, payload.categoryId, serializeTags(payload.tags), Number(payload.isPinned), payload.status, now(), request.params.id);
+    response.json(getSkill(request.params.id));
+  } catch (error) { response.status(400).json({ error: error.message }); }
+});
+app.delete("/api/skills/:id", (request, response) => { db.prepare("DELETE FROM skills WHERE id = ?").run(request.params.id); response.status(204).end(); });
+app.get("/api/export", (_request, response) => response.json({ schemaVersion: 1, exportedAt: now(), categories: getCategories(), tools: getTools(), documents: getDocuments(), skills: getSkills() }));
 app.post("/api/import", (request, response) => {
   try {
     const imported = request.body;
     if (!Array.isArray(imported.categories) || !Array.isArray(imported.tools)) throw new Error("JSON 文件格式不正确");
     db.transaction(() => {
-      const upsertCategory = db.prepare("INSERT INTO categories (id, name, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, sort_order = excluded.sort_order, updated_at = excluded.updated_at");
+      const upsertCategory = db.prepare("INSERT INTO categories (id, name, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, icon = excluded.icon, sort_order = excluded.sort_order, updated_at = excluded.updated_at");
       imported.categories.forEach((category, index) => {
         const id = String(category.id || makeId("cat")); const timestamp = now();
-        upsertCategory.run(id, String(category.name || "未命名分组").trim(), Number.isFinite(category.sortOrder) ? category.sortOrder : index, category.createdAt || timestamp, timestamp);
+        upsertCategory.run(id, String(category.name || "未命名分组").trim(), String(category.icon || "folder"), Number.isFinite(category.sortOrder) ? category.sortOrder : index, category.createdAt || timestamp, timestamp);
       });
       const upsertTool = db.prepare("INSERT INTO tools (id, name, description, icon, entry_type, local_path, category_id, tags, is_pinned, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, description = excluded.description, icon = excluded.icon, entry_type = excluded.entry_type, local_path = excluded.local_path, category_id = excluded.category_id, tags = excluded.tags, is_pinned = excluded.is_pinned, status = excluded.status, sort_order = excluded.sort_order, updated_at = excluded.updated_at");
       const clearEndpoints = db.prepare("DELETE FROM endpoints WHERE tool_id = ?");
@@ -276,8 +368,13 @@ app.post("/api/import", (request, response) => {
         const id = String(document.id || makeId("doc")); const payload = validateDocumentPayload(document); const timestamp = now();
         upsertDocument.run(id, payload.title, payload.url, payload.description, payload.categoryId, serializeTags(payload.tags), Number(payload.isPinned), payload.status, Number.isFinite(document.sortOrder) ? document.sortOrder : index, document.createdAt || timestamp, timestamp);
       });
+      const upsertSkill = db.prepare("INSERT INTO skills (id, name, description, icon, entry_type, primary_url, local_path, category_id, tags, is_pinned, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, description = excluded.description, icon = excluded.icon, entry_type = excluded.entry_type, primary_url = excluded.primary_url, local_path = excluded.local_path, category_id = excluded.category_id, tags = excluded.tags, is_pinned = excluded.is_pinned, status = excluded.status, sort_order = excluded.sort_order, updated_at = excluded.updated_at");
+      (imported.skills || []).forEach((skill, index) => {
+        const id = String(skill.id || makeId("skill")); const payload = validateSkillPayload(skill); const timestamp = now();
+        upsertSkill.run(id, payload.name, payload.description, payload.icon, payload.entryType, payload.primaryUrl, payload.localPath, payload.categoryId, serializeTags(payload.tags), Number(payload.isPinned), payload.status, Number.isFinite(skill.sortOrder) ? skill.sortOrder : index, skill.createdAt || timestamp, timestamp);
+      });
     })();
-    response.json({ categories: getCategories(), tools: getTools(), documents: getDocuments() });
+    response.json({ categories: getCategories(), tools: getTools(), documents: getDocuments(), skills: getSkills() });
   } catch (error) { response.status(400).json({ error: error.message }); }
 });
 
