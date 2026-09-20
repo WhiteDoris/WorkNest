@@ -30,8 +30,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 .app-shell { min-height: 100vh; display: flex; background: #f8f8ff; }
 .icon-rail { position: sticky; top: 0; z-index: 10; width: 84px; height: 100vh; flex: 0 0 84px; display: flex; flex-direction: column; align-items: center; padding: 22px 14px 20px; border-right: 1px solid var(--line); background: #f3f2ff; }
-.brand-mark { width: 50px; height: 50px; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; border-radius: 15px; color: #fff; background: var(--violet); box-shadow: 0 10px 20px rgba(103, 65, 244, 0.2); }
-.brand-logo { display: block; width: 100%; height: 100%; }
+.brand-mark { width: 56px; height: 56px; display: grid; place-items: center; flex: 0 0 56px; overflow: visible; padding: 0; border: 0; border-radius: 18px; color: #fff; background: transparent; }
+.brand-logo { display: block; width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(75, 43, 215, 0.22)); }
 .rail-items { display: flex; flex-direction: column; align-items: center; gap: 9px; margin-top: 30px; }
 .rail-button { position: relative; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 12px; color: #5b6594; background: transparent; transition: 160ms ease; }
 .rail-button:hover, .rail-button.active { color: var(--violet-strong); background: #e7e1ff; }
@@ -110,11 +110,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .skill-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(249, 247, 255, 0.94)); }
 .skill-card .skill-icon { border: 1px solid rgba(103, 65, 244, 0.08); }
 .card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.tool-icon { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 14px; }
-.featured .tool-icon { width: 56px; height: 56px; border-radius: 16px; }
+.tool-icon { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 14px; }
+.featured .tool-icon { width: 48px; height: 48px; border-radius: 14px; }
 .remote-icon-fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity 160ms ease; }
+.remote-icon-fallback > svg { width: 30px !important; height: 30px !important; }
 .remote-icon-fallback.is-hidden { opacity: 0; }
-.remote-tool-icon { position: absolute; inset: 17%; display: block; width: 66%; height: 66%; object-fit: contain; border-radius: 9px; opacity: 0; transition: opacity 160ms ease; }
+.remote-tool-icon { position: absolute; top: 50%; left: 50%; display: block; width: 30px; height: 30px; object-fit: contain; border-radius: 8px; opacity: 0; transform: translate(-50%, -50%); transition: opacity 160ms ease; }
 .remote-tool-icon.is-loaded { opacity: 1; }
 .card-actions { display: flex; align-items: center; gap: 2px; }
 .star-button, .more-button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 8px; color: #7280a4; background: transparent; }
@@ -135,6 +136,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .entry-badge.path { color: var(--mint-ink); background: var(--mint); }
 .local-badge { display: inline-flex; align-items: center; height: 23px; padding: 0 8px; border-radius: 7px; color: #b27612; background: #fff3d8; font-size: 11px; line-height: 1; white-space: nowrap; }
 .category-badge, .tag-badge { color: #727b9d; background: #f3f4f9; }
+.tag-badge.colored-tag { color: hsl(var(--tag-hue) 46% 32%); border: 1px solid hsl(var(--tag-hue) 70% 84%); background: hsl(var(--tag-hue) 88% 95%); }
 .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: auto; padding-top: 11px; }
 .address-stack { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 4px; }
 .address-preview { overflow: hidden; color: #9aa0b8; font-size: 10px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
@@ -161,6 +163,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .tag-filter { height: 29px; padding: 0 10px; border: 1px solid transparent; border-radius: 8px; color: #747d9f; background: #f4f4fa; font-size: 11px; }
 .tag-filter:hover { color: var(--violet-strong); background: var(--violet-pale); }
 .tag-filter.active { color: var(--violet-strong); border-color: #d5cdff; background: #f0edff; font-weight: 700; }
+.tag-filter.colored-tag:not(.active) { color: hsl(var(--tag-hue) 46% 32%); border-color: hsl(var(--tag-hue) 70% 84%); background: hsl(var(--tag-hue) 88% 95%); }
+.tag-filter.colored-tag:not(.active):hover { color: hsl(var(--tag-hue) 54% 28%); border-color: hsl(var(--tag-hue) 70% 73%); background: hsl(var(--tag-hue) 88% 92%); }
 .document-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .document-card { position: relative; min-width: 0; min-height: 214px; display: flex; flex-direction: column; padding: 17px 18px 14px; border: 1px solid #e5e5f3; border-radius: 16px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 7px 24px rgba(66, 53, 150, 0.045); transition: 180ms ease; }
 .document-card:hover { transform: translateY(-2px); border-color: #cfc7ff; box-shadow: var(--shadow); }
@@ -252,7 +256,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 @media (max-width: 760px) {
   .icon-rail { width: 64px; flex-basis: 64px; padding: 16px 8px; }
-  .brand-mark { width: 42px; height: 42px; border-radius: 12px; }
+  .brand-mark { width: 46px; height: 46px; flex-basis: 46px; border-radius: 14px; }
+  .brand-logo { width: 46px; height: 46px; }
   .rail-button { width: 42px; height: 42px; }
   .main-area { padding: 16px 14px 34px; }
   .brand-lockup { display: none; }
