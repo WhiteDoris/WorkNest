@@ -10,6 +10,7 @@ import {
   SiNotion, SiObsidian, SiPostman, SiWechat, SiYoutube,
 } from "react-icons/si";
 import { getFaviconUrls } from "./lib/favicon.js";
+import { getDraftCategoryId } from "./lib/category-default.js";
 import { splitPinnedTools } from "./lib/tool-groups.js";
 import { getTagColorStyle } from "./lib/tag-colors.js";
 
@@ -75,16 +76,16 @@ function apiRequest(path, options) {
 
 const parseTagInput = (value) => String(value || "").split(/[,，、]/).map((tag) => tag.trim()).filter(Boolean);
 
-function makeDraft(categories) {
-  return { id: null, name: "", description: "", icon: "folder", entryType: "http", primaryUrl: "", backupUrls: "", localPath: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
+function makeDraft(categories, activeFilter) {
+  return { id: null, name: "", description: "", icon: "folder", entryType: "http", primaryUrl: "", backupUrls: "", localPath: "", categoryId: getDraftCategoryId(categories, activeFilter), tags: "", isPinned: false, status: "active" };
 }
 
-function makeDocumentDraft(categories) {
-  return { id: null, title: "", url: "", description: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
+function makeDocumentDraft(categories, activeFilter) {
+  return { id: null, title: "", url: "", description: "", categoryId: getDraftCategoryId(categories, activeFilter), tags: "", isPinned: false, status: "active" };
 }
 
-function makeSkillDraft(categories) {
-  return { id: null, name: "", description: "", icon: "spark", entryType: "http", primaryUrl: "", localPath: "", categoryId: categories[0]?.id || "", tags: "", isPinned: false, status: "active" };
+function makeSkillDraft(categories, activeFilter) {
+  return { id: null, name: "", description: "", icon: "spark", entryType: "http", primaryUrl: "", localPath: "", categoryId: getDraftCategoryId(categories, activeFilter), tags: "", isPinned: false, status: "active" };
 }
 
 function AutoFavicon({ urls, fallback }) {
@@ -200,7 +201,7 @@ function App() {
     else showToast("请先配置 HTTP 地址或本地路径", "error");
   };
   const openEditor = (tool = null) => {
-    setEditor(tool ? { ...tool, backupUrls: (tool.endpoints || []).filter((endpoint) => !endpoint.isPrimary).map((endpoint) => endpoint.url).join("\n"), tags: (tool.tags || []).join(", ") } : makeDraft(categories));
+    setEditor(tool ? { ...tool, backupUrls: (tool.endpoints || []).filter((endpoint) => !endpoint.isPrimary).map((endpoint) => endpoint.url).join("\n"), tags: (tool.tags || []).join(", ") } : makeDraft(categories, activeFilter));
     setMenuId(null);
   };
   const saveTool = async (event) => {
@@ -269,7 +270,7 @@ function App() {
     window.open(document.url, "_blank", "noopener,noreferrer");
   };
   const openDocumentEditor = (document = null) => {
-    setDocumentEditor(document ? { ...document, tags: (document.tags || []).join(", ") } : makeDocumentDraft(categories));
+    setDocumentEditor(document ? { ...document, tags: (document.tags || []).join(", ") } : makeDocumentDraft(categories, activeFilter));
     setDocumentMenuId(null);
   };
   const saveDocument = async (event) => {
@@ -299,7 +300,7 @@ function App() {
     else showToast("请先配置 Skill 的 HTTP 地址或本地路径", "error");
   };
   const openSkillEditor = (skill = null) => {
-    setSkillEditor(skill ? { ...skill, tags: (skill.tags || []).join(", ") } : makeSkillDraft(categories));
+    setSkillEditor(skill ? { ...skill, tags: (skill.tags || []).join(", ") } : makeSkillDraft(categories, activeFilter));
     setSkillMenuId(null);
   };
   const saveSkill = async (event) => {
