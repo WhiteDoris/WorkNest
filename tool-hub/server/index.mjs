@@ -249,14 +249,14 @@ function getTool(id) {
   const row = db.prepare("SELECT id, name, description, icon, entry_type AS entryType, local_path AS localPath, category_id AS categoryId, tags, is_pinned AS isPinned, status, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM tools WHERE id = ?").get(id);
   if (!row) return null;
   const endpoints = db.prepare("SELECT id, label, url, is_primary AS isPrimary, sort_order AS sortOrder FROM endpoints WHERE tool_id = ? ORDER BY sort_order").all(id).map((endpoint) => ({ ...endpoint, isPrimary: Boolean(endpoint.isPrimary) }));
-  return { ...row, tags: parseTags(row.tags), isPinned: Boolean(row.isPinned), endpoints, primaryUrl: endpoints.find((endpoint) => endpoint.isPrimary)?.url || "" };
+  return { ...row, localPath: row.entryType === "path" ? row.localPath : "", tags: parseTags(row.tags), isPinned: Boolean(row.isPinned), endpoints, primaryUrl: row.entryType === "http" ? endpoints.find((endpoint) => endpoint.isPrimary)?.url || "" : "" };
 }
 function getTools() {
   return db.prepare("SELECT id FROM tools ORDER BY sort_order, name").all().map(({ id }) => getTool(id));
 }
 function getDocument(id) {
   const row = db.prepare("SELECT id, title, url, description, category_id AS categoryId, tags, is_pinned AS isPinned, status, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt FROM documents WHERE id = ?").get(id);
-  return row ? { ...row, tags: parseTags(row.tags), isPinned: Boolean(row.isPinned) } : null;
+  return row ? { ...row, primaryUrl: row.entryType === "http" ? row.primaryUrl : "", localPath: row.entryType === "path" ? row.localPath : "", tags: parseTags(row.tags), isPinned: Boolean(row.isPinned) } : null;
 }
 function getDocuments() {
   return db.prepare("SELECT id FROM documents ORDER BY sort_order, title").all().map(({ id }) => getDocument(id));
@@ -289,10 +289,10 @@ function validatePayload(payload, existing = {}) {
   if (!name) throw new Error("工具名称不能为空");
   if (!["http", "path"].includes(entryType)) throw new Error("工具类型无效");
   const primaryUrl = entryType === "http" ? normalizeUrl(payload.primaryUrl ?? existing.primaryUrl) : "";
-  const localPath = String(payload.localPath ?? existing.localPath ?? "").trim();
+  const localPath = entryType === "path" ? String(payload.localPath ?? existing.localPath ?? "").trim() : "";
   if (entryType === "http" && !primaryUrl) throw new Error("HTTP 地址不能为空");
   if (entryType === "path" && !localPath) throw new Error("本地路径不能为空");
-  const backupUrls = (payload.backupUrls || []).map(normalizeUrl).filter(Boolean);
+  const backupUrls = entryType === "http" ? (payload.backupUrls || []).map(normalizeUrl).filter(Boolean) : [];
   return { name, description: String(payload.description ?? existing.description ?? "").trim(), icon: String(payload.icon ?? existing.icon ?? "folder"), entryType, primaryUrl, localPath, categoryId: payload.categoryId ?? existing.categoryId ?? null, tags: payload.tags ?? existing.tags ?? [], isPinned: Boolean(payload.isPinned ?? existing.isPinned), status: payload.status === "disabled" ? "disabled" : "active", backupUrls };
 }
 function validateSkillPayload(payload, existing = {}) {
@@ -301,7 +301,7 @@ function validateSkillPayload(payload, existing = {}) {
   if (!name) throw new Error("Skill 名称不能为空");
   if (!["http", "path"].includes(entryType)) throw new Error("Skill 类型无效");
   const primaryUrl = entryType === "http" ? normalizeUrl(payload.primaryUrl ?? existing.primaryUrl) : "";
-  const localPath = String(payload.localPath ?? existing.localPath ?? "").trim();
+  const localPath = entryType === "path" ? String(payload.localPath ?? existing.localPath ?? "").trim() : "";
   if (entryType === "http" && !primaryUrl) throw new Error("Skill HTTP 地址不能为空");
   if (entryType === "path" && !localPath) throw new Error("Skill 本地路径不能为空");
   return { name, description: String(payload.description ?? existing.description ?? "").trim(), icon: String(payload.icon ?? existing.icon ?? "skill"), entryType, primaryUrl, localPath, categoryId: payload.categoryId ?? existing.categoryId ?? null, tags: payload.tags ?? existing.tags ?? [], isPinned: Boolean(payload.isPinned ?? existing.isPinned), status: payload.status === "disabled" ? "disabled" : "active" };
