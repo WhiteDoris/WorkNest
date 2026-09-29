@@ -10,11 +10,13 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 
 ## Durable design decisions
 
-- The selected direction is a light-mode personal utility workspace: warm white and pale lavender surfaces, violet primary actions, subtle grid/blueprint texture, and modular Bento-style tool cards.
-- The left grouping navigation is an icon-only rail. Category names appear through hover tooltips; counts and full labels stay out of the rail.
+- The selected direction is a purpose-built WorkNest Lab studio: misty blue-green canvas, pale sage navigation rail, cool periwinkle-blue focus color, unified sans typography, and a soft light-value split hero for experiments. Avoid amber emphasis and a black overall background.
+- The left navigation is an expanded studio rail with a single WorkNest Lab lockup, explicit Build Space / Knowledge sections, text labels, active indicator, and a local-vault status footer. Do not revert to the old icon-only rail or purple utility-dashboard treatment.
 - HTTP tools open their stored address in a new browser tab. Local-path tools copy their path because browser pages cannot reliably launch native applications.
 - The primary user-facing concept is a work page library for already-built web pages. Use 页面/工作台/工作场景 in visible copy; keep internal tool model and API names for compatibility. 文档库 remains a separate workspace for reference links.
 - The initial implementation is single-user and local-first, with an Express API backed by SQLite. The frontend keeps a demo-data fallback so the visual prototype remains usable when the API is unavailable.
-- The workspace now includes a separate 文档库 section for HTTP document links. Documents support category assignment, free-form tags, search, sort, favorites, CRUD editing, and opening the stored URL in a new tab.
-- The workspace also includes a separate Skill 库 for user-authored capabilities. Skills support HTTP addresses or local paths, category/tag filtering, favorites, CRUD editing, and opening or copying the configured entry.
-- Groups have persisted icon choices. Built-in groups are protected; user-created groups can be edited or removed from the 分组管理 modal, and assigned content remains available as 未分类 after removal.
+- The workspace now includes a separate 文档库 section for HTTP document links. Documents support free-form tags, collection views, search, sort, favorites, CRUD editing, and opening the stored URL in a new tab.
+- The workspace also includes a separate Skill 库 for user-authored capabilities. Skills support HTTP addresses or local paths, collection/tag filtering, favorites, CRUD editing, and opening or copying the configured entry.
+- Legacy group metadata remains persisted for API compatibility, but groups are not exposed as the primary navigation or content-management pattern. New content should use collection views (全部 / 最近加入 / 收藏 / 待整理) and free-form tags.
+- WorkNest is being reframed as **WorkNest Lab**: its primary job is to manage personal vibe-coding experiments and self-authored Skills. Keep the main surface centred on 实验库, Skill Vault, and a secondary reference shelf; preserve the existing local-first CRUD and entry behavior behind those concepts.
+- The title hierarchy is intentionally singular: WorkNest Lab appears in the rail brand lockup; the main canvas uses context breadcrumbs and workspace-specific headings rather than repeating the product title in multiple competing treatments.

@@ -146,20 +146,20 @@ const seed = db.transaction(() => {
   const insertCategory = db.prepare("INSERT INTO categories (id, name, icon, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)");
   categories.forEach(([name, icon], index) => insertCategory.run(`cat-${index}`, name, icon, index, now(), now()));
   const tools = [
-    ["chrome", "Chrome", "快速、安全的网页浏览器", "chrome", "path", "/Applications/Google Chrome.app", "cat-0", ["浏览器"], 1],
-    ["vscode", "VS Code", "强大的代码编辑器", "vscode", "path", "/Applications/Visual Studio Code.app", "cat-1", ["编辑器"], 1],
-    ["postman", "Postman", "API 开发与测试工作台", "postman", "path", "/Applications/Postman.app", "cat-1", ["API"], 1],
-    ["notion", "Notion", "连接你的想法与工作", "notion", "http", "https://www.notion.so", "cat-3", ["知识库"], 0],
-    ["docker", "Docker", "构建、运行和管理容器", "docker", "path", "/Applications/Docker.app", "cat-1", ["容器"], 0],
-    ["github", "GitHub", "面向开发者的代码托管平台", "github", "http", "https://github.com", "cat-1", ["代码"], 0],
-    ["figma", "Figma", "在线协作的界面设计工作台", "figma", "http", "https://www.figma.com", "cat-2", ["UI"], 0],
-    ["youtube", "YouTube", "发现和观看精彩视频", "youtube", "http", "https://youtube.com", "cat-5", ["视频"], 0],
-    ["downloads", "本地下载目录", "常用文件下载位置", "folder", "path", "/Users/you/Downloads", "cat-4", ["文件"], 0],
-    ["typora", "Typora", "优雅的 Markdown 编辑器", "document", "path", "/Applications/Typora.app", "cat-4", ["Markdown"], 0],
-    ["obsidian", "Obsidian", "构建你的知识库", "obsidian", "path", "/Applications/Obsidian.app", "cat-3", ["笔记"], 0],
-    ["paint", "画图", "简单实用的图像编辑工作台", "image", "path", "/Applications/Preview.app", "cat-2", ["图片"], 0],
-    ["chatgpt", "ChatGPT", "强大的 AI 助手", "openai", "http", "https://chatgpt.com", "cat-0", ["AI"], 0],
-    ["juejin", "掘金", "高质量的技术内容社区", "juejin", "http", "https://juejin.cn", "cat-5", ["社区"], 0],
+    ["chrome", "Prompt Canvas", "把一句想法变成可交互的网页原型", "chrome", "path", "/Applications/Google Chrome.app", "cat-0", ["vibe coding", "原型"], 1],
+    ["vscode", "Daily Brief", "面向个人节奏的 AI 工作日报", "vscode", "path", "/Applications/Visual Studio Code.app", "cat-1", ["React", "效率"], 1],
+    ["postman", "Research Relay", "把零散网页资料整理成研究脉络", "postman", "path", "/Applications/Postman.app", "cat-1", ["AI", "研究"], 1],
+    ["notion", "Idea Garden", "正在生长的灵感与产品碎片", "notion", "http", "https://www.notion.so", "cat-3", ["灵感", "知识库"], 0],
+    ["docker", "Launch Checklist", "从本地构建到发布前的轻量清单", "docker", "path", "/Applications/Docker.app", "cat-1", ["发布", "流程"], 0],
+    ["github", "Build Log", "记录每次 vibe-coding 的迭代与决定", "github", "http", "https://github.com", "cat-1", ["代码", "复盘"], 0],
+    ["figma", "Moodboard Studio", "收集界面氛围、组件和交互参考", "figma", "http", "https://www.figma.com", "cat-2", ["UI", "灵感"], 0],
+    ["youtube", "Signal Board", "把灵感、视频与参考集中成可检索信号", "youtube", "http", "https://youtube.com", "cat-5", ["研究", "媒体"], 0],
+    ["downloads", "Asset Drop", "本地素材与下载文件的工作台", "folder", "path", "/Users/you/Downloads", "cat-4", ["本地", "素材"], 0],
+    ["typora", "Field Notes", "把构建过程沉淀成可复用笔记", "document", "path", "/Applications/Typora.app", "cat-4", ["文档", "复盘"], 0],
+    ["obsidian", "Knowledge Garden", "连接实验、文档与长期知识", "obsidian", "path", "/Applications/Obsidian.app", "cat-3", ["知识", "链接"], 0],
+    ["paint", "Thumbnail Forge", "快速做出项目封面与视觉草图", "image", "path", "/Applications/Preview.app", "cat-2", ["视觉", "原型"], 0],
+    ["chatgpt", "Prompt Bench", "比较不同提示与模型输出", "openai", "http", "https://chatgpt.com", "cat-0", ["AI", "实验"], 0],
+    ["juejin", "Signal Scan", "收集社区反馈与技术线索", "juejin", "http", "https://juejin.cn", "cat-5", ["社区", "研究"], 0],
   ];
   const insertTool = db.prepare("INSERT INTO tools (id, name, description, icon, entry_type, local_path, category_id, tags, is_pinned, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)");
   const insertEndpoint = db.prepare("INSERT INTO endpoints (id, tool_id, label, url, is_primary, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
@@ -226,6 +226,29 @@ const migratePageCopy = db.transaction(() => {
   updateDocument.run("页面库的产品目标、信息架构和后续规划", now(), "doc-product", "工具库的产品目标、信息架构和后续规划");
 });
 migratePageCopy();
+
+// Reframe the original seeded utilities as Lab projects without overwriting user-renamed entries.
+const migrateVibeProjects = db.transaction(() => {
+  const updates = [
+    ["chrome", "Chrome", "Prompt Canvas", "把一句想法变成可交互的网页原型", ["vibe coding", "原型"]],
+    ["vscode", "VS Code", "Daily Brief", "面向个人节奏的 AI 工作日报", ["React", "效率"]],
+    ["postman", "Postman", "Research Relay", "把零散网页资料整理成研究脉络", ["AI", "研究"]],
+    ["notion", "Notion", "Idea Garden", "正在生长的灵感与产品碎片", ["灵感", "知识库"]],
+    ["docker", "Docker", "Launch Checklist", "从本地构建到发布前的轻量清单", ["发布", "流程"]],
+    ["github", "GitHub", "Build Log", "记录每次 vibe-coding 的迭代与决定", ["代码", "复盘"]],
+    ["figma", "Figma", "Moodboard Studio", "收集界面氛围、组件和交互参考", ["UI", "灵感"]],
+    ["youtube", "YouTube", "Signal Board", "把灵感、视频与参考集中成可检索信号", ["研究", "媒体"]],
+    ["downloads", "本地下载目录", "Asset Drop", "本地素材与下载文件的工作台", ["本地", "素材"]],
+    ["typora", "Typora", "Field Notes", "把构建过程沉淀成可复用笔记", ["文档", "复盘"]],
+    ["obsidian", "Obsidian", "Knowledge Garden", "连接实验、文档与长期知识", ["知识", "链接"]],
+    ["paint", "画图", "Thumbnail Forge", "快速做出项目封面与视觉草图", ["视觉", "原型"]],
+    ["chatgpt", "ChatGPT", "Prompt Bench", "比较不同提示与模型输出", ["AI", "实验"]],
+    ["juejin", "掘金", "Signal Scan", "收集社区反馈与技术线索", ["社区", "研究"]],
+  ];
+  const update = db.prepare("UPDATE tools SET name = ?, description = ?, tags = ?, updated_at = ? WHERE id = ? AND name = ?");
+  updates.forEach(([id, oldName, name, description, tags]) => update.run(name, description, JSON.stringify(tags), now(), id, oldName));
+});
+migrateVibeProjects();
 
 const seedSkills = db.transaction(() => {
   if (db.prepare("SELECT COUNT(*) AS count FROM skills").get().count > 0) return;
