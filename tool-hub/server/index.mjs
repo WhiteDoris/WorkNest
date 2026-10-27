@@ -93,7 +93,8 @@ const normalizeUrl = (value) => {
   const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(raw) ? raw : `http://${raw}`;
   const parsed = new URL(candidate);
   if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("只支持 HTTP 或 HTTPS 地址");
-  return parsed.toString().replace(/\/$/, "") || candidate;
+  const normalized = parsed.toString();
+  return parsed.pathname === "/" ? normalized.replace(/\/$/, "") : normalized;
 };
 
 const remoteRequest = (url) => fetch(url, {
@@ -115,7 +116,7 @@ const readRemoteIcon = async (url) => {
   const contentType = (response.headers.get("content-type") || "").split(";", 1)[0];
   if (!contentType.startsWith("image/")) return null;
   const body = Buffer.from(await response.arrayBuffer());
-  if (!body.length || body.length > 1024 * 1024) return null;
+  if (!body.length || body.length > 5 * 1024 * 1024) return null;
   return { body, contentType };
 };
 const findRemoteIcon = async (pageUrl) => {
